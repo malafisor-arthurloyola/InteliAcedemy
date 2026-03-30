@@ -26,7 +26,7 @@ A segunda, a do retângulo verde, são o time de news de IAs
 
 A terceira, a do retângulo rosa, é o processo de geração do relatório
 
-![alt text](/InteliAcedemy/assets/divisãoWorkflow.png)
+![alt text](/assets/divisãoWorkflow.png)
 
 ## 🔍 Como Cada Nó Funciona
 
