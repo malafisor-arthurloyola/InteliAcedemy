@@ -50,16 +50,16 @@ const texto = itens.map((item, i) => {
 }).join(' /// ').replace(/'/g, "");
 return [{ json: { noticias: texto } }];
 ```
-O `.replace(/'/g, "")` é crítico — remove aspas simples dos títulos que quebrariam o JSON.stringify posteriormente.
+O `.replace(/'/g, "")` é crítico, remove aspas simples dos títulos que quebrariam o JSON.stringify posteriormente.
 
 ![alt text](assets/1parteWorkflow.png)
 
 
 ### 4. IA 1 — Triagem e Categorização
-Recebe as 20 notícias brutas e categoriza cada uma em: IA Generativa, Aprendizado de Máquina, Visão Computacional, Ética em IA, Hardware e Infraestrutura, Regulamentação e Política, ou Aplicações em Setores. Não faz análises — apenas classifica.
+Recebe as 20 notícias brutas e categoriza cada uma em: IA Generativa, Aprendizado de Máquina, Visão Computacional, Ética em IA, Hardware e Infraestrutura, Regulamentação e Política, ou Aplicações em Setores. Não faz análises, apenas classifica.
 
 ### 5. IA 2 — Analista de Tendências
-Recebe as notícias já categorizadas e identifica 4 tendências reais com evidências concretas — citando notícias específicas, não generalizações.
+Recebe as notícias já categorizadas e identifica 4 tendências reais com evidências concretas, citando notícias específicas, não generalizações.
 
 ### 6. IA 3 — Analista de Oportunidades
 Identifica 5 oportunidades concretas para startups baseadas nas notícias da semana, com justificativa e setor de aplicação.
@@ -71,7 +71,7 @@ Recebe os três insumos anteriores e monta o relatório final com linguagem edit
 
 > 💡 **Por que múltiplas IAs?** 
 
-Uma única IA tentando categorizar 20 notícias, identificar tendências, mapear oportunidades e escrever o relatório ao mesmo tempo gera conteúdo genérico. Ao dividir as responsabilidades, cada agente faz uma coisa muito bem — exatamente como uma redação jornalística.
+Uma única IA tentando categorizar 20 notícias, identificar tendências, mapear oportunidades e escrever o relatório ao mesmo tempo gera conteúdo genérico. Ao dividir as responsabilidades, cada agente faz uma coisa muito bem, exatamente como uma redação jornalística.
 Então, decidi implementar um time de NewsLetter por meio dos agentes. 
 ![alt text](/assets/TimeNews.png)
 
@@ -165,7 +165,7 @@ Depois de muitas tentativas (Using Fields Below, Using JSON com Fixed, Raw body,
 ={{ JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [..., { role: 'user', content: $json.noticias }] }) }}
 ```
 
-O `JSON.stringify` cuida automaticamente do escape de aspas e caracteres especiais — algo que o n8n não faz quando você mistura JSON estático com expressões dinâmicas.
+O `JSON.stringify` cuida automaticamente do escape de aspas e caracteres especiais, algo que o n8n não faz quando você mistura JSON estático com expressões dinâmicas.
 
 ### Rate limit do Groq
 
@@ -173,7 +173,7 @@ Com 4 chamadas à API em sequência, o limite de tokens por minuto (12k TPM) e p
 
 ### A virada: sistema de múltiplas IAs
 
-O relatório gerado por uma única IA com todas as instruções juntas era sempre genérico — tendia a cobrir apenas 5 das 20 notícias e gerava tendências óbvias. A solução foi separar as responsabilidades em 4 agentes especializados, inspirado no modelo de uma redação jornalística. Essa mudança foi o maior salto de qualidade do projeto.
+O relatório gerado por uma única IA com todas as instruções juntas era sempre genérico, tendia a cobrir apenas 5 das 20 notícias e gerava tendências óbvias. A solução foi separar as responsabilidades em 4 agentes especializados, inspirado no modelo de uma redação jornalística. Essa mudança foi o maior salto de qualidade do projeto.
 
 ---
 
