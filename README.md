@@ -66,14 +66,14 @@ Identifica 5 oportunidades concretas para startups baseadas nas notícias da sem
 
 ### 7. IA 4 — Redator-Chefe
 Recebe os três insumos anteriores e monta o relatório final com linguagem editorial profissional. É instruído a usar o material dos analistas integralmente, sem resumir ou generalizar.
-![alt text](/assets/2parteworkflow.png)
+![alt text](/assets/2parteWorkflow.png)
 
 
 > 💡 **Por que múltiplas IAs?** 
 
 Uma única IA tentando categorizar 20 notícias, identificar tendências, mapear oportunidades e escrever o relatório ao mesmo tempo gera conteúdo genérico. Ao dividir as responsabilidades, cada agente faz uma coisa muito bem — exatamente como uma redação jornalística.
 Então, decidi implementar um time de NewsLetter por meio dos agentes. 
-![alt text](/assets/timeNews.png)
+![alt text](/assets/TimeNews.png)
 
 ---
 
