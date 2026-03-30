@@ -12,7 +12,7 @@
 
 O projeto resolve um problema real: a fragmentação de informações sobre IA na internet. Em vez de garimpar manualmente dezenas de fontes toda semana, o workflow roda automaticamente toda segunda-feira às 8h e entrega um relatório completo em Markdown com notícias categorizadas, tendências reais e oportunidades para startups.
 
-A grande sacada do projeto foi construir um **sistema editorial com múltiplas IAs**, onde cada agente tem uma função especializada — como uma redação de verdade.
+A grande sacada do projeto foi construir um **sistema editorial com múltiplas IAs**, onde cada agente tem uma função especializada  como uma redação de verdade.
 
 ---
 
