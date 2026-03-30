@@ -1,0 +1,520 @@
+{
+  "name": "CaseIaAcademySemAPISminhas",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        -144
+      ],
+      "id": "197ca4a0-a7f3-43f5-9f84-3aa10a65495b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -224,
+        -144
+      ],
+      "id": "f514c42e-2327-4bc9-a359-35b327f68499",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "sendTo": "malafisor@gmail.com",
+        "subject": "Relatório Semanal de IA — Inteli Academy",
+        "emailType": "text",
+        "message": "={{ $json.relatorio }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        64
+      ],
+      "id": "9fa89f90-eeb5-4c9d-9442-e79d295325cc",
+      "name": "Send a message",
+      "webhookId": "b0ed72c2-6af9-425a-a1b5-884e51efb5da",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const itens = $input.all();\n\nconst texto = itens.map((item, i) => {\n  const d = item.json;\n  return `${i + 1}. ${d.title} | ${d.contentSnippet} | Link: ${d.link}`;\n}).join(' /// ');\n\nreturn [{ json: { noticias: texto } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -144
+      ],
+      "id": "abe45420-267b-4d9d-9f4a-5f617d3b4ad2",
+      "name": "Code/Pegar as informações e deixar em bom formato"
+    },
+    {
+      "parameters": {
+        "jsCode": "const relatorio = $input.first().json.choices[0].message.content;\n\nreturn [{ json: { relatorio } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        -176
+      ],
+      "id": "aa325eb5-0493-48ca-9e8a-3a515ec69f40",
+      "name": "Code/Pegar Relatório"
+    },
+    {
+      "parameters": {
+        "jsCode": "const relatorio = $input.first().json.relatorio;\n\nreturn [{\n  json: { relatorio },\n  binary: {\n    data: {\n      data: Buffer.from(relatorio).toString('base64'),\n      mimeType: 'text/markdown',\n      fileName: 'relatorio_semanal.md'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        -176
+      ],
+      "id": "724288e5-9039-4b59-aabe-05b865c2f08d",
+      "name": "Code/Produzir MarkDownDoRelatório"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ColocarAPI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 2500, messages: [{ role: 'system', content: 'Você é um editor especializado em Inteligência Artificial. Receberá uma lista de notícias brutas sobre IA. Sua única tarefa é categorizar e resumir cada notícia individualmente. Para CADA notícia da lista, retorne obrigatoriamente: Número, Título original, Categoria (escolha uma: IA Generativa, Aprendizado de Máquina, Visão Computacional, Ética em IA, Hardware e Infraestrutura, Regulamentação e Política, Aplicações em Saúde, Aplicações em Finanças, Aplicações em Meio Ambiente, Aplicações em Outros Setores), Resumo em 1 frase objetiva, Link. Não pule nenhuma notícia. Não faça análises. Apenas categorize e resuma. Retorne todas as 20 notícias.' }, { role: 'user', content: $json.noticias }] }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        -144
+      ],
+      "id": "cc917f67-25ae-4324-b97e-8971716dcbd6",
+      "name": "HTTP Request/API Triagem e Categorização"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ColocarAPI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 3000, messages: [{ role: 'system', content: 'Você é um analista sênior de mercado de IA. Receberá notícias categorizadas sobre IA desta semana. Identifique exatamente 4 tendências reais e emergentes. Para cada tendência: 1) Dê um título específico e impactante, não genérico. 2) Cite pelo menos 2 notícias específicas pelo título como evidência. 3) Explique o padrão e seu impacto real no mercado. PROIBIDO: frases genéricas como a IA está crescendo ou investimentos em IA aumentam. OBRIGATÓRIO: cada tendência deve revelar algo não óbvio sobre o mercado de IA desta semana.' }, { role: 'user', content: $json.choices[0].message.content }] }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        608,
+        -288
+      ],
+      "id": "be25d58c-e06b-4d31-a9da-15dd66b58af9",
+      "name": "HTTP Request/API Analista de Tendências"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ColocarAPI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 3000, messages: [{ role: 'system', content: 'Você é um especialista em inovação e empreendedorismo em IA. Receberá notícias categorizadas sobre IA desta semana. Identifique exatamente 5 oportunidades concretas para startups. Para cada oportunidade: 1) Nome do produto ou serviço específico, não genérico. 2) Problema real que resolve. 3) Qual notícia específica desta semana evidencia essa oportunidade. 4) Por que AGORA é o momento certo. PROIBIDO: oportunidades genéricas como desenvolver soluções de IA. OBRIGATÓRIO: cada oportunidade deve ser um produto real que poderia ser lançado hoje.' }, { role: 'user', content: $json.choices[0].message.content }] }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        -352
+      ],
+      "id": "6533958e-2cb8-44f4-9987-a3fd3366a770",
+      "name": "HTTP Request/API Analista de Oportunidades"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        -288
+      ],
+      "id": "f3edc541-c05f-4e60-8132-8dca7e76c74c",
+      "name": "Wait",
+      "webhookId": "43ffb650-2643-4804-bc4a-682e3c8b4650"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        -288
+      ],
+      "id": "90449713-9aa3-42da-b32a-536ea252c93e",
+      "name": "Wait1",
+      "webhookId": "24fd6ba8-40cc-46e4-8e57-3ef2b6d7bcf4"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        -352
+      ],
+      "id": "00ff6b7c-250f-41d0-ab52-0db2ce989026",
+      "name": "Wait2",
+      "webhookId": "087e4a4b-6a72-4c32-8732-ad5b0fb82442"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ColocarAPI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \n  model: 'llama-3.3-70b-versatile', \n  max_tokens: 6400, \n  messages: [\n    { \n      role: 'system', \n      content: `Você é o redator-chefe sênior da newsletter de IA mais respeitada do Brasil, com 20 anos de experiência em jornalismo tecnológico. Seu estilo é analítico, estratégico e acessível.\n\nVocê receberá três insumos de analistas:\n1. Notícias categorizadas\n2. Tendências identificadas\n3. Oportunidades para startups\n\nSua tarefa é montar um relatório semanal completo em português.\n\nESTRUTURA (ORDEM OBRIGATÓRIA):\n\n## 🔥 Tendências da Semana\n- Comece sempre por esta seção\n- Apresente 3 a 5 tendências reais\n- Cada tendência deve conter: nome, notícias usadas como base, explicação do padrão e impacto\n\n## 🚀 Oportunidades para Startups\n- Liste 4 a 6 oportunidades\n- Cada uma deve conter: nome da ideia, problema real, base nas notícias e justificativa de timing\n\n## 🧠 Resumo da Semana\n- Faça uma síntese estratégica conectando tendências e oportunidades\n\n## 📚 Notícias Principais\n- Deve vir SEMPRE por último\n- Liste todas as notícias com categoria, título, resumo e link\n\nREGRAS IMPORTANTES:\n- NÃO altere a ordem das seções\n- Priorize análise sobre listagem\n- O relatório deve parecer uma newsletter profissional\n- Evite generalizações vagas\n\nOBJETIVO:\nTransformar informações dispersas em inteligência estratégica útil.` \n    },\n    { role: 'user', content: $json.triagem },\n    { role: 'user', content: $json.tendencias },\n    { role: 'user', content: $json.oportunidades }\n  ] \n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1616,
+        -176
+      ],
+      "id": "4d36ea5d-f998-4194-80ee-6cae328e643c",
+      "name": "HTTP Request/API Redator Chefe"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1088,
+        -48
+      ],
+      "id": "99c551e5-1678-4140-a859-2bb82eb1c197",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const itens = $input.all();\nconst triagem = itens[0].json.choices[0].message.content.replace(/\"/g, '').replace(/\\n/g, ' ');\nconst tendencias = itens[1].json.choices[0].message.content.replace(/\"/g, '').replace(/\\n/g, ' ');\nconst oportunidades = itens[2].json.choices[0].message.content.replace(/\"/g, '').replace(/\\n/g, ' ');\n\nreturn [{ json: { triagem, tendencias, oportunidades } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        -32
+      ],
+      "id": "66ff0df2-6b44-4037-8343-847c402a401d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/ColocaroWeebHookDiscord",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "payload_json",
+              "value": "{   \"content\": \"🤖 Relatório semanal de IA chegou!\\n📎 Veja o arquivo abaixo\",   \"username\": \"AI News Bot\" }"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "files[0]",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2432,
+        -176
+      ],
+      "id": "697838be-bbed-4ee1-9bed-a646074e095b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "messages": {
+          "values": [
+            {}
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        96
+      ],
+      "id": "90475faf-5513-4907-a65a-39a555e623f1",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "JKTnjaJqd5M5Gy39",
+          "name": "Google Gemini(PaLM) Api account 5"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Code/Pegar as informações e deixar em bom formato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Code/Pegar as informações e deixar em bom formato": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request/API Triagem e Categorização",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code/Pegar Relatório": {
+      "main": [
+        [
+          {
+            "node": "Code/Produzir MarkDownDoRelatório",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request/API Triagem e Categorização": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request/API Analista de Tendências": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request/API Analista de Oportunidades": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request/API Analista de Tendências",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request/API Analista de Oportunidades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request/API Redator Chefe": {
+      "main": [
+        [
+          {
+            "node": "Code/Pegar Relatório",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request/API Redator Chefe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code/Produzir MarkDownDoRelatório": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "fc72c86c-35fd-4417-84ac-1fb2666f6930",
+  "meta": {
+    "instanceId": "1fd394d936d9c7f2b4d449fafbb2b910985594ab3b3f0d1c6cbbcefc1aa87345"
+  },
+  "id": "6szzL0pIf21kVYWm",
+  "tags": []
+}
